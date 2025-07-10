@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sale Deed Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-4">
+    <h2>Sale Deed Details</h2>
+    <p>
+      This Sale Deed is made on <%= data.date %> between <%= data.name %>, S/o <%= data.father_name %>,
+      for a property of <%= data.property_size %> sq.ft., sold for ₹<%= data.sale_amount %>.
+    </p>
+    <form action="/generate-pdf" method="POST">
+      <% for (let key in data) { %>
+        <input type="hidden" name="<%= key %>" value="<%= data[key] %>">
+      <% } %>
+      <button type="submit" class="btn btn-success mt-2">Download PDF</button>
+      <a href="/" class="btn btn-secondary mt-2">Back to Form</a>
+    </form>
+  </div>
+</body>
+</html>
