@@ -4,6 +4,7 @@ const ejs = require('ejs');
 const pdf = require('html-pdf');
 
 const app = express();
+
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -20,7 +21,6 @@ app.post('/generate-pdf', (req, res) => {
   const data = req.body;
   ejs.renderFile(__dirname + '/views/template.ejs', { data }, (err, html) => {
     if (err) return res.send('Error generating PDF template');
-
     pdf.create(html).toBuffer((err, buffer) => {
       if (err) return res.send('Error generating PDF');
       res.setHeader('Content-Type', 'application/pdf');
@@ -30,4 +30,5 @@ app.post('/generate-pdf', (req, res) => {
   });
 });
 
-app.listen(3000, () => console.log('Server starts on http://localhost:3000'));
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}`));
