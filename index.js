@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
-const pdf = require('html-pdf');
+const puppeteer = require('puppeteer');
 
 const app = express();
 
@@ -17,17 +17,34 @@ app.post('/submit', (req, res) => {
   res.render('result', { data });
 });
 
-app.post('/generate-pdf', (req, res) => {
+app.post('/generate-pdf', async (req, res) => {
   const data = req.body;
-  ejs.renderFile(__dirname + '/views/template.ejs', { data }, (err, html) => {
-    if (err) return res.send('Error generating PDF template');
-    pdf.create(html).toBuffer((err, buffer) => {
-      if (err) return res.send('Error generating PDF');
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', 'attachment; filename=sale-deed.pdf');
-      res.send(buffer);
+  try {
+    const html = await ejs.renderFile(__dirname + '/views/template.ejs', { data });
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-  });
+
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+
+    const pdfBuffer = await page.pdf({ format: 'A4' });
+
+    await browser.close();
+
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=sale-deed.pdf'
+    });
+    res.send(pdfBuffer);
+
+  } catch (err) {
+    console.error('Error generating PDF:', err);
+    res.send('Error generating PDF');
+  }
 });
 
 const port = process.env.PORT || 3000;
